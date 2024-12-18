@@ -1,0 +1,129 @@
+# Ik this is crappy code, alot needs renaming and stuff, but i'm just messing around
+#
+import pygame
+import random
+# pygame setup
+pygame.init()
+info = pygame.display.Info()
+screen_width = info.current_w
+screen_height = info.current_h
+screen = pygame.display.set_mode((screen_width-100, screen_height-100), pygame.RESIZABLE)
+clock = pygame.time.Clock()
+running = True
+dt = 0
+speed = 3
+coloredCircle = {}
+playerCount = 0
+
+def random_color():
+   # return (0,0,(position.y)/screen_height*720)
+    return (random.randint(0,0), random.randint(0, 255), random.randint(0, 255))
+    
+def add_player_position(name, position=None, color=None):
+    if position is None: 
+        position = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
+    else:
+        position = pygame.Vector2(position)
+    if color is None:  
+        color = random_color()
+    
+    coloredCircle[name] = {
+        "position": position,
+        "color": color,
+        "direction": (random.randint(-200, 200), random.randint(-200, 200))
+    }
+
+def drawPlayers(playerPosition) :   
+    for circle in coloredCircle.values():
+        position = circle["position"]
+        clampedX = max(0,min(position.x, screen_width))
+        clampedY = max(0,min(position.y, screen_height))
+        colorHeight = float(clampedY/screen_height*255)
+        colorWidth = float(clampedX/screen_width*255)
+        color = (colorHeight,colorWidth*0,colorWidth)
+        #color = (0,0,(position.y/720)*255)
+        pygame.draw.circle(screen, color, (int(position.x), int(position.y)), 40)
+    
+def border(playerPosVar):
+    for circle in coloredCircle.values():
+        position = circle["position"]
+        if position.x <= -40:
+            position.x = screen.get_width()+39
+        if position.x > screen.get_width()+40:
+            position.x = -40
+        if position.y <= -40:
+            position.y = screen.get_height()+39
+        if position.y > screen.get_height()+40:
+            position.y = -40
+        
+def direction(playerPosition, xDirection, yDirection):
+    for circle in coloredCircle.values():
+        position = circle["position"]
+        x_dir, y_dir = circle["direction"]
+        position.x += x_dir * dt * speed
+        position.y += y_dir * dt * speed
+
+players = 10000
+for i in range(0,players):
+    add_player_position(f"player{i}")
+playerCount = players
+first_player =  pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
+
+while running:
+    for event in pygame.event.get():   
+        """
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            pos = pygame.mouse.get_pos()
+            col = (0, 255, 255)  # Cyan color
+            add_player_position(f"player{playerCount}", pos, col)
+            playerCount += 1
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            pos = pygame.mouse.get_pos()
+            col = (255, 0, 255)
+            pygame.draw.circle(screen, col, pos, 20, 5)
+            pygame.display.update()
+        """
+        if event.type == pygame.QUIT:
+            running = False  
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_UP]:
+        first_player.y -= 300 * dt * speed
+    elif keys[pygame.K_w]:
+        first_player.y -= 300 * dt * speed
+    if keys[pygame.K_DOWN]:
+        first_player.y += 300 * dt * speed
+    elif keys[pygame.K_s]:
+        first_player.y += 300 * dt * speed
+    if keys[pygame.K_LEFT]:
+        first_player.x -= 300 * dt * speed
+    elif keys[pygame.K_a]:
+        first_player.x -= 300 * dt * speed
+    if keys[pygame.K_RIGHT]:
+        first_player.x += 300 * dt * speed
+    elif keys[pygame.K_d]:
+        first_player.x += 300 * dt * speed    
+    
+    screen.fill("black")
+    #pygame.draw.circle(screen, "red", first_player, 40) this is for a user controlled circle to see how the side walls work (set players being drawn to 0 to see fully)
+    direction(coloredCircle, 0, 0)
+    border(coloredCircle)
+    if first_player.x <= -40:
+        first_player.x = screen.get_width()+39
+    if first_player.x > screen.get_width()+40:
+        first_player.x = -40
+    if first_player.y <= -40:
+        first_player.y = screen.get_height()+39
+    if first_player.y > screen.get_height()+40:
+        first_player.y = -40
+    drawPlayers(coloredCircle)
+
+    #keys = pygame.key.get_pressed()
+    # flip() the display to put your work on screen
+    pygame.display.flip()
+    # limits FPS to 60
+    # dt is delta time in seconds since last frame, used for framerate-
+    # independent physics.
+    dt = clock.tick(600) / 1000
+pygame.quit()
+
+
